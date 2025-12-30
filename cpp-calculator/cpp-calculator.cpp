@@ -5,14 +5,14 @@
 void safe_input(std::string& expr) {
     std::getline(std::cin, expr);
 
-    // this list will change
-    // TODO: add ^, (), %, ., ",".
-    std::string correct_input_list = "0123456789+-*/ ";
+    // this list in string_view will change
+    // TODO: add ., ',', (), %, ^.
+    
     bool correct_expr = true;
     do {
         correct_expr = true;
         for (auto it = expr.begin(); it != expr.end(); it++) {
-            if (correct_input_list.find(*it) == std::string::npos) {
+            if (std::string_view("0123456789+-*/ ").find(*it) == std::string_view::npos) {
                 correct_expr = false;
                 break;
             }
