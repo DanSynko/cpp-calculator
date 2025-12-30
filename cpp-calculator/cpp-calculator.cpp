@@ -32,7 +32,7 @@ int main()
     std::cout << "Enter a math problem: " << std::endl;
     safe_input(math_e);
 
-    std::vector<char> output_arr;
+    std::vector<std::string> output_arr;
     std::stack<char> operators_stack;
 
     for (auto it = math_e.begin(); it != math_e.end(); it++) {
@@ -41,13 +41,13 @@ int main()
         if (*it == '+' || *it == '-' || *it == '/' || *it == '*') {
             if (*it == '/' || *it == '*') {
                 while (!operators_stack.empty() && (operators_stack.top() == '*' || operators_stack.top() == '/')) {
-                    output_arr.push_back(operators_stack.top());
+                    output_arr.push_back(std::string(1, operators_stack.top()));
                     operators_stack.pop();
                 }
             }
             else if (*it == '+' || *it == '-') {
                 while (!operators_stack.empty()) {
-                    output_arr.push_back(operators_stack.top());
+                    output_arr.push_back(std::string(1, operators_stack.top()));
                     operators_stack.pop();
                 }
             }
@@ -55,13 +55,19 @@ int main()
             continue;
         }
         else {
-            output_arr.push_back(*it);
+            std::string number;
+            while (it != math_e.end() && isdigit(*it)) {
+                number.push_back(*it);
+                it++;
+            }
+            output_arr.push_back(number);
+            it--;
         }
     }
     std::cout << '\n';
    
     while (!operators_stack.empty()) {
-        output_arr.push_back(operators_stack.top());
+        output_arr.push_back(std::string(1, operators_stack.top()));
         operators_stack.pop();
     }
 
@@ -87,28 +93,26 @@ int main()
     std::stack<int> result;
 
     for (auto it = output_arr.begin(); it != output_arr.end(); it++) {
-        if (*it == '+' || *it == '-' || *it == '*' || *it == '/') {
+        if (*it == "+" || *it == "-" || *it == "*" || *it == "/") {
             int a = result.top();
             result.pop();
             int b = result.top();
             result.pop();
-            switch (*it) {
-                case '+':
-                    result.push(a + b);
-                    break;
-                case '-':
-                    result.push(b - a);
-                    break;
-                case '*':
-                    result.push(a * b);
-                    break;
-                case '/':
-                    result.push(b / a);
-                    break;
+            if (*it == "+") {
+                result.push(a + b);
+            }
+            else if (*it == "-") {
+                result.push(b - a);
+            }
+            else if (*it == "*") {
+                result.push(a * b);
+            }
+            else if (*it == "/") {
+                result.push(b / a);
             }
         }
-        else if (isdigit(*it)) {
-            result.push(*it - '0');
+        else {
+            result.push(std::stoi(*it));
         }
     }
 
