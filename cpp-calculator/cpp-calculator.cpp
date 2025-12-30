@@ -39,14 +39,24 @@ int main()
         if (*it == ' ') continue;
 
         if (*it == '+' || *it == '-' || *it == '/' || *it == '*') {
-            while (!operators_stack.empty() && (operators_stack.top() == '*' || operators_stack.top() == '/')) {
-                output_arr.push_back(operators_stack.top());
-                operators_stack.pop();
+            if (*it == '/' || *it == '*') {
+                while (!operators_stack.empty() && (operators_stack.top() == '*' || operators_stack.top() == '/')) {
+                    output_arr.push_back(operators_stack.top());
+                    operators_stack.pop();
+                }
+            }
+            else if (*it == '+' || *it == '-') {
+                while (!operators_stack.empty()) {
+                    output_arr.push_back(operators_stack.top());
+                    operators_stack.pop();
+                }
             }
             operators_stack.push(*it);
             continue;
         }
-        output_arr.push_back(*it);
+        else {
+            output_arr.push_back(*it);
+        }
     }
     std::cout << '\n';
    
