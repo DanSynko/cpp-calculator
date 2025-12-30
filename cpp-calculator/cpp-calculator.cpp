@@ -38,9 +38,7 @@ int main()
     for (auto it = math_e.begin(); it != math_e.end(); it++) {
         if (*it == ' ') continue;
 
-        std::string operators_list = "+-*/";
-
-        if (operators_list.find(*it) != std::string::npos) {
+        if (std::string_view("+-*/").find(*it) != std::string_view::npos) {
             if (*it == '/' || *it == '*') {
                 while (!operators_stack.empty() && (operators_stack.top() == '*' || operators_stack.top() == '/')) {
                     output_arr.push_back(std::string(1, operators_stack.top()));
