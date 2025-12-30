@@ -38,7 +38,9 @@ int main()
     for (auto it = math_e.begin(); it != math_e.end(); it++) {
         if (*it == ' ') continue;
 
-        if (*it == '+' || *it == '-' || *it == '/' || *it == '*') {
+        std::string operators_list = "+-*/";
+
+        if (operators_list.find(*it) != std::string::npos) {
             if (*it == '/' || *it == '*') {
                 while (!operators_stack.empty() && (operators_stack.top() == '*' || operators_stack.top() == '/')) {
                     output_arr.push_back(std::string(1, operators_stack.top()));
@@ -90,13 +92,13 @@ int main()
 
 
 
-    std::stack<int> result;
+    std::stack<double> result;
 
     for (auto it = output_arr.begin(); it != output_arr.end(); it++) {
         if (*it == "+" || *it == "-" || *it == "*" || *it == "/") {
-            int a = result.top();
+            double a = result.top();
             result.pop();
-            int b = result.top();
+            double b = result.top();
             result.pop();
             if (*it == "+") {
                 result.push(a + b);
@@ -112,7 +114,7 @@ int main()
             }
         }
         else {
-            result.push(std::stoi(*it));
+            result.push(std::stod(*it));
         }
     }
 
