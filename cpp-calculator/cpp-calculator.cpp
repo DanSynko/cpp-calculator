@@ -6,15 +6,20 @@ void safe_input(std::string& expr) {
     std::getline(std::cin, expr);
 
     // this list in string_view will change
-    // TODO: add ., ',', (), %, ^.
+    // TODO: add (), %, ^.
     
-    bool correct_expr = true;
+    bool correct_expr;
     do {
         correct_expr = true;
-        for (auto it = expr.begin(); it != expr.end(); it++) {
-            if (std::string_view("0123456789+-*/ ").find(*it) == std::string_view::npos) {
-                correct_expr = false;
-                break;
+        if (expr.empty()) {
+            correct_expr = false;
+        }
+        else {
+            for (auto it = expr.begin(); it != expr.end(); it++) {
+                if (std::string_view("0123456789+-*/., ").find(*it) == std::string_view::npos) {
+                    correct_expr = false;
+                    break;
+                }
             }
         }
 
@@ -31,6 +36,10 @@ int main()
     std::string math_e;
     std::cout << "Enter a math problem: " << std::endl;
     safe_input(math_e);
+
+
+    
+    // Shunting-yard algorithm
 
     std::vector<std::string> output_arr;
     std::stack<char> operators_stack;
@@ -56,8 +65,19 @@ int main()
         }
         else {
             std::string number;
-            while (it != math_e.end() && isdigit(*it)) {
-                number.push_back(*it);
+            bool has_point = false;
+            while (it != math_e.end() && (isdigit(*it) || *it == ' ' || *it == '.' || *it == ',')) {
+                if (*it != ' ') {
+                    if ((*it == '.' || *it == ',')) {
+                        if (!has_point) {
+                            number.push_back('.');
+                            has_point = true;
+                        }
+                    }
+                    else {
+                        number.push_back(*it);
+                    }
+                }
                 it++;
             }
             output_arr.push_back(number);
@@ -75,6 +95,8 @@ int main()
 
 
 
+    // reverse polish notation output
+    
     std::stack<char> stack_temp = operators_stack;
 
     std::cout << "reverse polish notation: ";
@@ -89,6 +111,9 @@ int main()
 
 
 
+
+
+    // stack machine
 
     std::stack<double> result;
 
