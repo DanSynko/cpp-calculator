@@ -84,8 +84,8 @@ int main()
             it--;
         }
     }
+
     std::cout << '\n';
-   
     while (!operators_stack.empty()) {
         output_arr.push_back(std::string(1, operators_stack.top()));
         operators_stack.pop();
@@ -94,21 +94,13 @@ int main()
 
 
 
-
     // reverse polish notation output
-    
-    std::stack<char> stack_temp = operators_stack;
 
     std::cout << "reverse polish notation: ";
     for (auto it = output_arr.begin(); it != output_arr.end(); it++) {
         std::cout << *it << ". ";
     }
-    while (!stack_temp.empty()) {
-        std::cout << stack_temp.top() << ". " << std::endl;
-        stack_temp.pop();
-    }
     std::cout << '\n' << std::endl;
-
 
 
 
