@@ -31,20 +31,41 @@ void safe_input(std::string& expr) {
     } while (!correct_expr);
 }
 
-int main()
-{
-    std::string math_e;
-    std::cout << "Enter a math problem: " << std::endl;
-    safe_input(math_e);
 
 
-    
-    // Shunting-yard algorithm
+bool math_expression_validation(const std::vector<std::string>& expr) {
+    int operators_count = 0;
+    int operands_count = 0;
+    for (auto it = expr.begin(); it != expr.end(); it++) {
+        if (std::string_view("+-*/").find(*it) != std::string_view::npos) {
+            operators_count++;
+        }
+        else if (std::string_view(".").find(*it) != std::string_view::npos) {
+            continue;
+        }
+        else {
+            operands_count++;
+        }
+    }
 
+
+    if (operands_count == 0) {
+        return false;
+    }
+    else if (operands_count <= operators_count) {
+        return false;
+    }
+
+    return true;
+}
+
+
+
+std::vector<std::string> shunting_yard_algorithm(const std::string& expr) {
     std::vector<std::string> output_arr;
     std::stack<char> operators_stack;
 
-    for (auto it = math_e.begin(); it != math_e.end(); it++) {
+    for (auto it = expr.begin(); it != expr.end(); it++) {
         if (*it == ' ') continue;
 
         if (std::string_view("+-*/").find(*it) != std::string_view::npos) {
@@ -66,7 +87,7 @@ int main()
         else {
             std::string number;
             bool has_point = false;
-            while (it != math_e.end() && (isdigit(*it) || *it == ' ' || *it == '.' || *it == ',')) {
+            while (it != expr.end() && (isdigit(*it) || *it == ' ' || *it == '.' || *it == ',')) {
                 if (*it != ' ') {
                     if ((*it == '.' || *it == ',')) {
                         if (!has_point) {
@@ -85,31 +106,20 @@ int main()
         }
     }
 
-    std::cout << '\n';
     while (!operators_stack.empty()) {
         output_arr.push_back(std::string(1, operators_stack.top()));
         operators_stack.pop();
     }
 
+    return output_arr;
+}
 
 
 
-    // reverse polish notation output
-
-    std::cout << "reverse polish notation: ";
-    for (auto it = output_arr.begin(); it != output_arr.end(); it++) {
-        std::cout << *it << ". ";
-    }
-    std::cout << '\n' << std::endl;
-
-
-
-
-    // stack machine
-
+double stack_machine(std::vector<std::string>& rpn) {
     std::stack<double> result;
 
-    for (auto it = output_arr.begin(); it != output_arr.end(); it++) {
+    for (auto it = rpn.begin(); it != rpn.end(); it++) {
         if (*it == "+" || *it == "-" || *it == "*" || *it == "/") {
             double a = result.top();
             result.pop();
@@ -133,8 +143,49 @@ int main()
         }
     }
 
+    return result.top();
+}
 
-    std::cout << "result: " << result.top() << std::endl;
+
+
+int main()
+{
+    // First level of protection: check for valid characters and empty input. Use custom safe_input function instead of std::cin.
+    std::string math_e;
+    std::cout << "Enter a math problem: " << std::endl;
+    safe_input(math_e);
+    
+
+    // Second level of protection: check for mathematical correctness (operands/operators balance)
+    std::vector<std::string> RPN;
+    bool incorrect_expr = true;
+    while (incorrect_expr) {
+        RPN = shunting_yard_algorithm(math_e);
+        if (math_expression_validation(RPN)) {
+            incorrect_expr = false;
+        }
+        else {
+            std::cout << "Error: invalid math expression. Try again." << std::endl;
+            safe_input(math_e);
+        }
+    }
+
+    std::cout << '\n';
+
+
+
+    // reverse polish notation output
+
+    std::cout << "reverse polish notation: ";
+    for (auto it = RPN.begin(); it != RPN.end(); it++) {
+        std::cout << *it << ". ";
+    }
+    std::cout << '\n' << std::endl;
+
+
+
+
+    std::cout << "result: " << stack_machine(RPN) << std::endl;
 
     return 0;
 }
