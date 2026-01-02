@@ -6,7 +6,7 @@ void safe_input(std::string& expr) {
     std::getline(std::cin, expr);
 
     // this list in string_view will change
-    // TODO: add %, ^.
+    // TODO: add ^.
     
     bool correct_expr;
     do {
@@ -16,7 +16,7 @@ void safe_input(std::string& expr) {
         }
         else {
             for (auto it = expr.begin(); it != expr.end(); it++) {
-                if (std::string_view("0123456789+-*/.,() ").find(*it) == std::string_view::npos) {
+                if (std::string_view("0123456789+-*/.,()% ").find(*it) == std::string_view::npos) {
                     correct_expr = false;
                     break;
                 }
@@ -52,8 +52,26 @@ bool math_expression_validation(const mathexpr auto& expr) {
                 close_brackets_count++;
             }
         }
-        else if (std::string_view(".").find(*it) != std::string_view::npos) {
-            continue;
+        else if (std::string_view("%").find(*it) != std::string_view::npos) {
+            if constexpr (std::is_same_v<decltype(expr), const std::string&>) {
+                if (it == expr.begin()) {
+                    return false;
+                }
+
+                auto prev = it;
+                prev--;
+                if (std::string_view("+-*/ ").find(*prev) != std::string_view::npos) {
+                    return false;
+                }
+
+                auto next = it;
+                next++;
+                if (next != expr.end()) {
+                    if (std::string_view("+-*/) ").find(*next) == std::string_view::npos) {
+                        return false;
+                    }
+                }
+            }
         }
         else {
             operands_count++;
@@ -83,7 +101,7 @@ std::vector<std::string> shunting_yard_algorithm(const std::string& expr) {
     for (auto it = expr.begin(); it != expr.end(); it++) {
         if (*it == ' ') continue;
 
-        if (std::string_view("+-*/()").find(*it) != std::string_view::npos) {
+        if (std::string_view("+-*/()%").find(*it) != std::string_view::npos) {
             if (*it == ')') {
                 while (!operators_stack.empty() && (operators_stack.top() != '(')) {
                     output_arr.push_back(std::string(1, operators_stack.top()));
@@ -108,6 +126,14 @@ std::vector<std::string> shunting_yard_algorithm(const std::string& expr) {
                     output_arr.push_back(std::string(1, operators_stack.top()));
                     operators_stack.pop();
                 }
+            }
+            else if (*it == '%') {
+                if (output_arr.empty()) {
+                    return {};
+                }
+
+                output_arr.push_back("%");
+                continue;
             }
             operators_stack.push(*it);
             continue;
@@ -165,6 +191,11 @@ double stack_machine(std::vector<std::string>& rpn) {
             else if (*it == "/") {
                 result.push(b / a);
             }
+        }
+        else if (*it == "%") {
+            double perc = result.top();
+            result.pop();
+            result.push(perc / 100);
         }
         else {
             result.push(std::stod(*it));
