@@ -38,18 +38,23 @@ std::same_as<T, std::vector<std::string>>;
 bool math_expression_validation(const mathexpr auto& expr) {
     int operators_count = 0;
     int operands_count = 0;
-    int open_brackets_count = 0;
-    int close_brackets_count = 0;
+    int open_parentheses_count = 0;
+    int close_parentheses_count = 0;
     for (auto it = expr.begin(); it != expr.end(); it++) {
         if (std::string_view("+-*/").find(*it) != std::string_view::npos) {
+            if constexpr (std::is_same_v<decltype(expr), const std::string&>) {
+                if (*it == '-' && (it == expr.begin() || *(std::prev(it)) == '(')) {
+                    continue;
+                }
+            }
             operators_count++;
         }
         else if (std::string_view("()").find(*it) != std::string_view::npos) {
             if (std::string_view("(").find(*it) != std::string_view::npos) {
-                open_brackets_count++;
+                open_parentheses_count++;
             }
             else if (std::string_view(")").find(*it) != std::string_view::npos) {
-                close_brackets_count++;
+                close_parentheses_count++;
             }
         }
         else if (std::string_view("%").find(*it) != std::string_view::npos) {
@@ -85,7 +90,7 @@ bool math_expression_validation(const mathexpr auto& expr) {
     else if (operands_count <= operators_count) {
         return false;
     }
-    else if (open_brackets_count != close_brackets_count) {
+    else if (open_parentheses_count != close_parentheses_count) {
         return false;
     }
 
@@ -121,10 +126,22 @@ std::vector<std::string> shunting_yard_algorithm(const std::string& expr) {
                     operators_stack.pop();
                 }
             }
-            else if (*it == '+' || *it == '-') {
+            else if (*it == '+') {
                 while (!operators_stack.empty() && operators_stack.top() != '(') {
                     output_arr.push_back(std::string(1, operators_stack.top()));
                     operators_stack.pop();
+                }
+            }
+            else if (*it == '-') {
+                if (it == expr.begin() || *(std::prev(it)) == '(') {
+                    operators_stack.push('~');
+                    continue;
+                }
+                else {
+                    while (!operators_stack.empty() && operators_stack.top() != '(') {
+                        output_arr.push_back(std::string(1, operators_stack.top()));
+                        operators_stack.pop();
+                    }
                 }
             }
             else if (*it == '%') {
@@ -174,7 +191,12 @@ double stack_machine(std::vector<std::string>& rpn) {
     std::stack<double> result;
 
     for (auto it = rpn.begin(); it != rpn.end(); it++) {
-        if (*it == "+" || *it == "-" || *it == "*" || *it == "/") {
+        if (*it == "~") {
+            double num = result.top();
+            result.pop();
+            result.push(-num);
+        }
+        else if (*it == "+" || *it == "-" || *it == "*" || *it == "/") {
             double a = result.top();
             result.pop();
             double b = result.top();
@@ -215,7 +237,7 @@ int main()
     safe_input(math_e);
     
 
-    // Second level of protection: check for mathematical correctness (operands/operators balance)
+    // Second level of protection: check for mathematical correctness (e.g. balance of operands/operators and parentheses).
     std::vector<std::string> RPN;
     bool incorrect_expr = true;
     while (incorrect_expr) {
@@ -233,18 +255,12 @@ int main()
 
 
 
-
-
-
-
     // reverse polish notation output
-
     std::cout << "reverse polish notation: ";
     for (auto it = RPN.begin(); it != RPN.end(); it++) {
         std::cout << *it << ". ";
     }
     std::cout << '\n' << std::endl;
-
 
 
 
