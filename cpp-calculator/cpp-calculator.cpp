@@ -2,27 +2,27 @@
 #include <stack>
 #include <queue>
 #include <string>
+
 void safe_input(std::string& expr) {
     std::getline(std::cin, expr);
 
+
     // this list in string_view will change
-    // TODO: add ^.
+    // TODO: no goals for now.
+
     
     bool correct_expr;
     do {
-        correct_expr = true;
-        if (expr.empty()) {
-            correct_expr = false;
+        if (expr == "exit") {
+            return;
         }
-        else {
-            for (auto it = expr.begin(); it != expr.end(); it++) {
-                if (std::string_view("0123456789+-*/.,()% ").find(*it) == std::string_view::npos) {
-                    correct_expr = false;
-                    break;
-                }
+        correct_expr = true;
+        for (auto it = expr.begin(); it != expr.end(); it++) {
+            if (std::string_view("0123456789+-*/.,()%^ ").find(*it) == std::string_view::npos) {
+                correct_expr = false;
+                break;
             }
         }
-
         if (!correct_expr) {
             std::cout << "Error: invalid math expression. Try again." << std::endl;
             std::getline(std::cin, expr);
@@ -41,7 +41,7 @@ bool math_expression_validation(const mathexpr auto& expr) {
     int open_parentheses_count = 0;
     int close_parentheses_count = 0;
     for (auto it = expr.begin(); it != expr.end(); it++) {
-        if (std::string_view("+-*/").find(*it) != std::string_view::npos) {
+        if (std::string_view("+-*/^").find(*it) != std::string_view::npos) {
             if constexpr (std::is_same_v<decltype(expr), const std::string&>) {
                 if (*it == '-' && (it == expr.begin() || *(std::prev(it)) == '(')) {
                     continue;
@@ -99,14 +99,14 @@ bool math_expression_validation(const mathexpr auto& expr) {
 
 
 
-std::vector<std::string> shunting_yard_algorithm(const std::string& expr) {
+std::vector<std::string> shunting_yard_algorithm(std::string_view expr) {
     std::vector<std::string> output_arr;
     std::stack<char> operators_stack;
 
     for (auto it = expr.begin(); it != expr.end(); it++) {
         if (*it == ' ') continue;
 
-        if (std::string_view("+-*/()%").find(*it) != std::string_view::npos) {
+        if (std::string_view("+-*/()%^").find(*it) != std::string_view::npos) {
             if (*it == ')') {
                 while (!operators_stack.empty() && (operators_stack.top() != '(')) {
                     output_arr.push_back(std::string(1, operators_stack.top()));
@@ -219,6 +219,13 @@ double stack_machine(std::vector<std::string>& rpn) {
             result.pop();
             result.push(perc / 100);
         }
+        else if (*it == "^") {
+            int exponent = result.top();
+            result.pop();
+            double base = result.top();
+            result.pop();
+            result.push(std::pow(base, exponent));
+        }
         else {
             result.push(std::stod(*it));
         }
@@ -231,40 +238,48 @@ double stack_machine(std::vector<std::string>& rpn) {
 
 int main()
 {
-    // First level of protection: check for valid characters and empty input. Use custom safe_input function instead of std::cin.
-    std::string math_e;
-    std::cout << "Enter a math problem: " << std::endl;
-    safe_input(math_e);
+    std::cout << "Available operators: +, -, *, /, %, ^. " << std::endl;
     
+    while (true) {
 
-    // Second level of protection: check for mathematical correctness (e.g. balance of operands/operators and parentheses).
-    std::vector<std::string> RPN;
-    bool incorrect_expr = true;
-    while (incorrect_expr) {
-        RPN = shunting_yard_algorithm(math_e);
-        if (math_expression_validation(math_e) && math_expression_validation(RPN)) {
-            incorrect_expr = false;
+        // First level of protection: check for valid characters and empty input. Use custom safe_input function instead of std::cin.
+        std::string math_e;
+        std::cout << "Enter a math problem. Enter 'exit' to close the program: " << std::endl;
+        safe_input(math_e);
+        if (math_e == "exit") {
+            break;
         }
-        else {
-            std::cout << "Error: invalid math expression. Try again." << std::endl;
-            safe_input(math_e);
+
+        // Second level of protection: check for mathematical correctness (e.g. balance of operands/operators and parentheses).
+        std::vector<std::string> RPN;
+        bool incorrect_expr = true;
+        while (incorrect_expr) {
+            RPN = shunting_yard_algorithm(math_e);
+            if (math_expression_validation(math_e) && math_expression_validation(RPN)) {
+                incorrect_expr = false;
+            }
+            else {
+                std::cout << "Error: invalid math expression. Try again." << std::endl;
+                safe_input(math_e);
+            }
         }
+
+        std::cout << '\n';
+
+
+
+        // reverse polish notation output
+        std::cout << "reverse polish notation: ";
+        for (auto it = RPN.begin(); it != RPN.end(); it++) {
+            std::cout << *it << ". ";
+        }
+        std::cout << '\n' << std::endl;
+
+
+
+        std::cout << "result: " << stack_machine(RPN) << std::endl;
+        std::cout << "----------------------------------------------------------------------------------------------\n" << std::endl;
     }
-
-    std::cout << '\n';
-
-
-
-    // reverse polish notation output
-    std::cout << "reverse polish notation: ";
-    for (auto it = RPN.begin(); it != RPN.end(); it++) {
-        std::cout << *it << ". ";
-    }
-    std::cout << '\n' << std::endl;
-
-
-
-    std::cout << "result: " << stack_machine(RPN) << std::endl;
 
     return 0;
 }
