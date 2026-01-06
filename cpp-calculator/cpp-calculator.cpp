@@ -2,30 +2,21 @@
 #include <stack>
 #include <queue>
 #include <string>
+#include <algorithm>
 
 void safe_input(std::string& expr) {
-    std::getline(std::cin, expr);
-
-
-    // this list in string_view will change
-    // TODO: no goals for now.
-
-    
     bool correct_expr;
     do {
+        std::getline(std::cin, expr);
+
         if (expr == "exit") {
             return;
         }
+
         correct_expr = true;
-        for (auto it = expr.begin(); it != expr.end(); it++) {
-            if (std::string_view("0123456789+-*/.,()%^ ").find(*it) == std::string_view::npos) {
-                correct_expr = false;
-                break;
-            }
-        }
-        if (!correct_expr) {
+        if (!std::all_of(expr.begin(), expr.end(), [](char c){ return std::string_view("0123456789+-*/.,()%^ ").find(c) != std::string_view::npos; })) {
+            correct_expr = false;
             std::cout << "Error: invalid math expression. Try again." << std::endl;
-            std::getline(std::cin, expr);
         }
 
     } while (!correct_expr);
