@@ -13,7 +13,7 @@ My implementation supports operators **+, -, *, /, (), % and ^**.
 ### C++ features:
 * **std::stack**
 * **concepts**
-* **some functions from "<algorithm>" library**
+* **some functions from "algorithm" library**
 * **std::string_view**
 
 ## Extra:
